@@ -1,8 +1,9 @@
 { pkgs }: {
     deps = [
+        # Python for converter
+        pkgs.python38
         # Compiler
-        pkgs.sudo
-                           pkgs.rustc
+        pkgs.rustc
         # Project / library manager
         pkgs.cargo
         # Formats your code

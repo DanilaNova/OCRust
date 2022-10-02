@@ -1,3 +1,4 @@
+# Converting string with hexadecimal number into a string with binary number
 def hextobin(h):
   length = len(h) * 4
   integer = int(h, 16)
@@ -5,18 +6,13 @@ def hextobin(h):
 
 hexfile = open("font.hex")
 output = open("output.txt", "w")
+
 print("Converting...")
-for i in range(100):
-  index = hexfile.read(4)
-  hexfile.read(1)
-  data = hexfile.readline()[:-1]
-  index = int(index, 16)
-  data = hextobin(data)
-  if(index == 48):
-    print(data)
-  output.write(str(index) + ":\n")
-  for j in range(16):
-    stringLen = int(len(data) / 16)
-    print(stringLen)
-    output.write(str(data)[j*stringLen:(j+1)*stringLen] + "\n")
-  output.write("\n")
+for line in hexfile:
+  sep = line.find(":") # Index and data separator
+  index = int(line[:sep], 16) # Converted index (hex->dec)
+  data = hextobin(line[sep+1:-1]) # Converted data (hex->bin)
+  # Write index into a file
+  output.write(f'{index}:{data}\n')
+
+print("Done.")

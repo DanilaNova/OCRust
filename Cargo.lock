@@ -78,6 +78,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ocrust"
+version = "0.1.0"
+dependencies = [
+ "raylib",
+ "rlua",
+]
+
+[[package]]
 name = "pkg-config"
 version = "0.3.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -93,14 +101,6 @@ dependencies = [
  "lazy_static",
  "libc",
  "raylib-sys",
-]
-
-[[package]]
-name = "raylib-in-rust"
-version = "0.1.0"
-dependencies = [
- "raylib",
- "rlua",
 ]
 
 [[package]]

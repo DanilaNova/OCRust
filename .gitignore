@@ -20,3 +20,6 @@ replit.nix
 
 # Different settings
 Cargo.toml
+
+#VS Code
+.vscode

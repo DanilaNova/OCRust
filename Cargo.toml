@@ -1,9 +1,0 @@
-[package]
-name = "ocrust"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-# Uses nobuild because Raylib is installed through Nix
-raylib = { version = "3.7", features = ["nobuild"] }
-rlua = "0.19.4"

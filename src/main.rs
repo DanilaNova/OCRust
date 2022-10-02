@@ -16,10 +16,6 @@ impl std::ops::Mul for Resolution {
     }
 }
 
-fn generate_glyph() {
-  
-}
-
 fn main() {
   
   let resolution_list = [
@@ -69,7 +65,7 @@ fn main() {
     .build();
   // Limit framerate
   rl.set_target_fps(fps_limit);
-  let font = 
+  let font = rl.get_font_default();
   // Runloop
   while !rl.window_should_close() {
     let mut d = rl.begin_drawing(&thread);
@@ -83,6 +79,7 @@ fn main() {
     d.draw_text("Initialized.", 3, 22, 18, Color::WHITE);
     d.draw_text(&text, 3, 40, 18, Color::WHITE);
     d.draw_text(&text2, 3, 58, 18, Color::WHITE);
-    d.draw_text_rec(&font, "XIA")
+    d.draw_rectangle_lines(3,76, 54,18, Color::WHITE);
+    d.draw_text_rec(&font, "XIA", Rectangle{x: 3.0, y: 76.0, width: 54.0, height: 18.0}, 18.0, 5.0, false, Color::WHITE);
   }
 }

@@ -40,7 +40,7 @@ fn main() {
         if line.len() <= 2 { continue }
         let split: Vec<&str> = line.split(':').collect();
         if split.len() > 2 {
-          println!("Unexpected split on line:\n{line}");
+          println!("Unexpected split on line:\n{}", line);
           return;
         }
         let index;
@@ -65,15 +65,16 @@ fn main() {
       }
     },
     Err(err) => {
-      println!("Error while opening a font file:\n{err}");
+      println!("Error while opening a font file:\n{}", err);
       return;
     }
   }
 
   let hashmap_size = (glyph_map.capacity() * 11 / 10) * 44;
   println!("Hashmap generated.\n\
-            Hashmap memory size = {hashmap_size}\n\
-            Hashmap capacity = {}", glyph_map.capacity());
+            Hashmap memory size = {}\n\
+            Hashmap capacity = {}",
+            hashmap_size, glyph_map.capacity());
 
   let resolution_list = [
     Resolution{width: 50, height: 16},

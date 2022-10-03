@@ -1,4 +1,6 @@
+use std::{fs::File, io::Read, collections::HashMap};
 use raylib::prelude::*;
+use hex::FromHex;
 //use rlua::prelude::Lua;
 
 // Struct for storing and manipulating resolutons
@@ -24,7 +26,54 @@ impl std::fmt::Display for Resolution {
   }
 }
 
+
+
 fn main() {
+  println!("Generating glyph hashmap from font.hex...");
+  let mut glyph_map: HashMap<u32, Vec<u8>> = HashMap::new();
+
+  match File::open("font.hex") {
+    Ok(mut file) => {
+      let mut buffer = String::new();
+      let _size = file.read_to_string(&mut buffer).unwrap();
+      for line in buffer.split('\n') {
+        if line.len() <= 2 { continue }
+        let split: Vec<&str> = line.split(':').collect();
+        if split.len() > 2 {
+          println!("Unexpected split on line:\n{line}");
+          return;
+        }
+        let index;
+        let glyph;
+
+        match <[u8; 4]>::from_hex(format!("{:0>8}", split[0])) {
+          Ok(bytes) => index = u32::from_be_bytes(bytes),
+          Err(err) => {
+          println!("Error while converting index:\n{}\n{}", split[0], err);
+            return;
+          }
+        }
+
+        match <Vec<u8>>::from_hex(split[1].trim()) {
+          Ok(bytes) => glyph = bytes,
+          Err(err) => {
+            println!("Error while converting glyph:\n{}\n{}", split[1], err);
+            return;
+          }
+        }
+        glyph_map.insert(index, glyph);
+      }
+    },
+    Err(err) => {
+      println!("Error while opening a font file:\n{err}");
+      return;
+    }
+  }
+
+  let hashmap_size = (glyph_map.capacity() * 11 / 10) * 44;
+  println!("Hashmap generated.\n\
+            Hashmap memory size = {hashmap_size}\n\
+            Hashmap capacity = {}", glyph_map.capacity());
 
   let resolution_list = [
     Resolution{width: 50, height: 16},
@@ -39,14 +88,14 @@ fn main() {
   let mut str = String::from("Avaliable screen tiers:\n");
   let mut i = 0;
   for resolution in resolution_list.into_iter() {
-    str += &format!("{} - {}x{}\n", i, resolution.width, resolution.height);
+    str += &format!("{} - {}\n", i, resolution);
     i += 1;
   }
   
   let mut stop = false;
   while !stop {
     let mut input = String::new();
-    println!("{}Choose:", str);
+    println!("{}Choose tier:", str);
     stdin.read_line(&mut input).unwrap();
     match input.trim().parse::<u16>() {
       Ok(n) => {

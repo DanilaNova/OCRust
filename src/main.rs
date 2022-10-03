@@ -69,12 +69,12 @@ fn main() {
       return;
     }
   }
-
-  let hashmap_size = (glyph_map.capacity() * 11 / 10) * 44;
+  
   println!("Hashmap generated.\n\
             Hashmap memory size = {}\n\
             Hashmap capacity = {}",
-            hashmap_size, glyph_map.capacity());
+            glyph_map.capacity() * 484 / 10, 
+            glyph_map.capacity());
 
   let resolution_list = [
     Resolution{width: 50, height: 16},

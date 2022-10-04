@@ -29,34 +29,59 @@ impl Display for Resolution {
 // Glyph operations
 // Errors
 #[derive(Debug)]
-pub enum GlyphWidthError {
-    TooSmall{l: usize},
-    NotAMultiple{l: usize},
+pub enum GlyphError {
+    TooSmall,
+    OddLen,
 }
-impl std::error::Error for GlyphWidthError {}
+impl std::error::Error for GlyphError {}
 
-impl Display for GlyphWidthError {
+impl Display for GlyphError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            GlyphWidthError::TooSmall{l} => {
-                write!(f, "Vector is too small to be height of 16: {}", l)
+            GlyphError::TooSmall => {
+                write!(f, "glyph is too small to be height of 16.")
             }
-            GlyphWidthError::NotAMultiple{l} => write!(f, "Vector length is not a multiple of 16: {}", l),
+            GlyphError::OddLen => write!(f, "number of bytes in vector is odd."),
         }
     }
 }
 // Function
-fn get_glyph_width(vector: Vec<u8>) -> Result<usize, GlyphWidthError> {
-  let length = vector.len();
-  if length < 16 {
-    return Err(GlyphWidthError::TooSmall{l: length});
-  } else if length % 16 != 0 {
-    return Err(GlyphWidthError::NotAMultiple{l: length});
+fn get_glyph_width(vector: &Vec<u8>) -> Result<usize, GlyphError> {
+  let length = &vector.len();
+  if length < &2 {
+    return Err(GlyphError::TooSmall);
+  } else if length % 2 != 0 {
+    return Err(GlyphError::OddLen);
   }
-  return Ok(length / 16);
+  return Ok(length / 2);
 }
 
-
+fn generate_glyph_image(vector: &Vec<u8>) -> Result<texture::Image, GlyphError> {
+  let height = 16;
+  match get_glyph_width(&vector) {
+    Ok(width) => {
+      let mut image = texture::Image::gen_image_color(width as i32, height, Color::BLACK);
+      image.set_format(PixelFormat::PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
+      let mut x = 0;
+      let maxx = width as i32 - 1;
+      let mut y = 0;
+      for byte in vector {
+        let str = format!("{:08b}", byte);
+      for bit in str.chars() {
+          if bit == '1' {image.draw_pixel(x, y, Color::WHITE)}
+          if x < maxx  { x += 1 }
+          else {
+            y += 1;
+            x = 0;
+          }
+        }
+      }
+      Ok(image)
+    },
+    Err(GlyphError::TooSmall) => return Err(GlyphError::TooSmall),
+    Err(GlyphError::OddLen) => return Err(GlyphError::OddLen),
+  }
+}
 
 fn main() {
   println!("Generating glyph hashmap from font.hex...");
@@ -106,6 +131,8 @@ fn main() {
             glyph_map.capacity() * 484 / 10, 
             glyph_map.capacity());
 
+  println!("Width of the glyph number 33: {}", get_glyph_width(&glyph_map[&33]).unwrap());
+  
   let resolution_list = [
     Resolution{width: 50, height: 16},
     Resolution{width: 80, height: 25},
@@ -154,6 +181,19 @@ fn main() {
     .build();
   // Limit framerate
   rl.set_target_fps(fps_limit);
+  // Load textures
+  let number_glyphs: [Texture2D; 10] = [
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&48]).unwrap()).unwrap(),
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&49]).unwrap()).unwrap(),
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&50]).unwrap()).unwrap(),
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&51]).unwrap()).unwrap(),
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&52]).unwrap()).unwrap(),
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&53]).unwrap()).unwrap(),
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&54]).unwrap()).unwrap(),
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&55]).unwrap()).unwrap(),
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&56]).unwrap()).unwrap(),
+    rl.load_texture_from_image(&thread, &generate_glyph_image(&glyph_map[&57]).unwrap()).unwrap(),
+  ];
   // Runloop
   while !rl.window_should_close() {
     let mut d = rl.begin_drawing(&thread);
@@ -167,5 +207,16 @@ fn main() {
     d.draw_text("Test initialized.", 3, 22, 16, Color::WHITE);
     d.draw_text(&text, 3, 40, 16, Color::WHITE);
     d.draw_text(&text2, 3, 58, 16, Color::WHITE);
+    d.draw_line(0, 74, true_resolution.width, 74, Color::WHITE);
+    d.draw_texture(&number_glyphs[0], 1, 75, Color::WHITE);
+    d.draw_texture(&number_glyphs[1], 9, 75, Color::WHITE);
+    d.draw_texture(&number_glyphs[2], 17, 75, Color::WHITE);
+    d.draw_texture(&number_glyphs[3], 25, 75, Color::WHITE);
+    d.draw_texture(&number_glyphs[4], 33, 75, Color::WHITE);
+    d.draw_texture(&number_glyphs[5], 41, 75, Color::WHITE);
+    d.draw_texture(&number_glyphs[6], 49, 75, Color::WHITE);
+    d.draw_texture(&number_glyphs[7], 57, 75, Color::WHITE);
+    d.draw_texture(&number_glyphs[8], 65, 75, Color::WHITE);
+    d.draw_texture(&number_glyphs[9], 73, 75, Color::WHITE);
   }
 }

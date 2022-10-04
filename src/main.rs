@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read, collections::HashMap};
+use std::{fs::File, io::Read, collections::HashMap, fmt, fmt::{Display, Formatter}};
 use raylib::prelude::*;
 use hex::FromHex;
 //use rlua::prelude::Lua;
@@ -20,10 +20,40 @@ impl std::ops::Mul for Resolution {
   }
 }
 // Displaying resolution in user-friendly format
-impl std::fmt::Display for Resolution {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Display for Resolution {
+  fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
     write!(f, "{}x{}", self.width, self.height)
   }
+}
+
+// Glyph operations
+// Errors
+#[derive(Debug)]
+pub enum GlyphWidthError {
+    TooSmall{l: usize},
+    NotAMultiple{l: usize},
+}
+impl std::error::Error for GlyphWidthError {}
+
+impl Display for GlyphWidthError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match *self {
+            GlyphWidthError::TooSmall{l} => {
+                write!(f, "Vector is too small to be height of 16: {}", l)
+            }
+            GlyphWidthError::NotAMultiple{l} => write!(f, "Vector length is not a multiple of 16: {}", l),
+        }
+    }
+}
+// Function
+fn get_glyph_width(vector: Vec<u8>) -> Result<usize, GlyphWidthError> {
+  let length = vector.len();
+  if length < 16 {
+    return Err(GlyphWidthError::TooSmall{l: length});
+  } else if length % 16 != 0 {
+    return Err(GlyphWidthError::NotAMultiple{l: length});
+  }
+  return Ok(length / 16);
 }
 
 
@@ -134,8 +164,8 @@ fn main() {
     
     d.draw_rectangle_lines(0,0,true_resolution.width,true_resolution.height, Color::WHITE);
     d.draw_fps(3,2);
-    d.draw_text("Test initialized.", 3, 22, 18, Color::WHITE);
-    d.draw_text(&text, 3, 40, 18, Color::WHITE);
-    d.draw_text(&text2, 3, 58, 18, Color::WHITE);
+    d.draw_text("Test initialized.", 3, 22, 16, Color::WHITE);
+    d.draw_text(&text, 3, 40, 16, Color::WHITE);
+    d.draw_text(&text2, 3, 58, 16, Color::WHITE);
   }
 }
